@@ -1,0 +1,11 @@
+{
+  "name": "school-reunion-app",
+  "private": true,
+  "scripts": {
+    "build": "pnpm --recursive build",
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev"
+  },
+  "devDependencies": {
+    "@types/node": "^20"
+  }
+}
