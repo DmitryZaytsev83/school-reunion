@@ -3,6 +3,7 @@ import { Box, Button, Card, CardContent, Container, TextField, Typography, Circu
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CameraAlt } from '@mui/icons-material'; // Иконка камеры
+import * as React from 'react'; // Для React.use в Client Component
 
 // Импортируем shared-типы
 import type { User as SharedUser } from '@app/shared/dist/types';
@@ -29,36 +30,27 @@ export default function EditProfilePage() {
 
     const fetchCurrentUser = async () => {
       try {
-        const res = await fetch('http://localhost:3000/auth/profile', { // Получаем профиль текущего юзера
+        // ✅ Используем маршрут /users/me для получения профиля текущего юзера
+        const res = await fetch('http://localhost:3000/users/me', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         if (!res.ok) {
-          throw new Error('Не удалось загрузить профиль');
+          const errorText = await res.text();
+          console.error('Ошибка от бэкенда:', errorText);
+          throw new Error(`Не удалось загрузить профиль: ${res.status} ${res.statusText}`);
         }
 
-        // ❗️ВАЖНО: /auth/profile возвращает только { message: 'You are authenticated' }
-        // Нам нужен реальный endpoint, например, /users/me
-        // Пока используем фиктивный ID, но в реальности нужно создать /users/me
-        const profileRes = await fetch('http://localhost:3000/users/ec5d23e0-87e1-444d-a105-ce6442194b66', { // ❗️ВРЕМЕННО
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!profileRes.ok) {
-          throw new Error('Не удалось загрузить данные пользователя');
-        }
-
-        const userData: SharedUser = await profileRes.json();
+        const userData: SharedUser = await res.json();
         setUser(userData);
         setFirstName(userData.firstName);
         setLastName(userData.lastName);
         setEmail(userData.email);
         if (userData.avatar) {
-          setAvatarPreview(`http://localhost:3000/uploads/${userData.avatar}`); // ❗️ВРЕМЕННО
+          // ✅ Формируем путь к аватару
+          setAvatarPreview(`http://localhost:3000/uploads/${userData.avatar}`);
         }
       } catch (err: any) {
         setError(err.message);
@@ -97,10 +89,9 @@ export default function EditProfilePage() {
     }
 
     try {
-      // ❗️ВАЖНО: Нужен endpoint на бэкенде для обновления профиля, например, PATCH /users/me
-      // Пока используем фиктивный вызов, но в реальности нужно создать такой маршрут
-      const res = await fetch('http://localhost:3000/users/ec5d23e0-87e1-444d-a105-ce6442194b66', { // ❗️ВРЕМЕННО
-        method: 'PATCH', // или PUT
+      // ✅ Используем маршрут PATCH /users/me для обновления профиля
+      const res = await fetch('http://localhost:3000/users/me', {
+        method: 'PATCH',
         headers: {
           // Не указываем 'Content-Type', браузер сам установит boundary
           Authorization: `Bearer ${token}`,
@@ -113,8 +104,12 @@ export default function EditProfilePage() {
         throw new Error(errorData.message || 'Ошибка обновления профиля');
       }
 
+      const updatedData = await res.json();
+      console.log('Профиль обновлён:', updatedData);
+
       alert('Профиль успешно обновлён!');
-      router.push('/profile/ec5d23e0-87e1-444d-a105-ce6442194b66'); // ❗️ВРЕМЕННО
+      // ✅ Перенаправляем на собственный профиль (после обновления)
+      router.push(`/profile/${updatedData.id}`); // ID возвращается из /users/me
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -200,7 +195,7 @@ export default function EditProfilePage() {
             fullWidth
             margin="normal"
             value={email}
-            disabled // ❗️Email не редактируем
+            disabled // Email не редактируем
             InputProps={{
               readOnly: true,
             }}

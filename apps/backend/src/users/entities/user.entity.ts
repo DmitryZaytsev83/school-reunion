@@ -5,10 +5,11 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { User as SharedUser } from '@app/shared/dist/types';
+// import { User as SharedUser } from '@app/shared'; // ❌ Убираем, чтобы избежать проблем с implements
 
 @Entity('users')
-export class User implements SharedUser {
+export class User /* implements SharedUser */ {
+  // ❌ Убираем implements, если есть проблемы
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -25,6 +26,7 @@ export class User implements SharedUser {
   @Column()
   lastName: string;
 
+  // ✅ Новое поле: аватар
   @Column({ nullable: true })
   avatar?: string;
 

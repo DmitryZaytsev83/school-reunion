@@ -12,13 +12,24 @@ export class UsersService {
     return await this.usersRepo.save(user);
   }
 
+  async updateById(id: string, updateData: Partial<User>): Promise<User> {
+    // ✅ Возвращаем User
+    await this.usersRepo.update(id, updateData);
+    const updatedUser = await this.findById(id); // ✅ findById возвращает User | undefined
+    if (!updatedUser) {
+      // ❗️Это маловероятно, но на всякий случай
+      throw new Error('User not found after update');
+    }
+    return updatedUser; // ✅ Возвращаем User
+  }
+
   async findByEmail(email: string): Promise<User | undefined> {
     const user = await this.usersRepo.findOne({ where: { email } });
-    return user || undefined; // ✅ Явно возвращаем undefined, если null
+    return user || undefined;
   }
 
   async findById(id: string): Promise<User | undefined> {
     const user = await this.usersRepo.findOne({ where: { id } });
-    return user || undefined; // ✅ Явно возвращаем undefined, если null
+    return user || undefined;
   }
 }

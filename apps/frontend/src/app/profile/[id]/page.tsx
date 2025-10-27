@@ -102,9 +102,11 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar sx={{ width: 80, height: 80, mr: 2 }}>
-              {user.firstName.charAt(0)}
-              {user.lastName.charAt(0)}
+            <Avatar
+              src={user.avatar ? `http://localhost:3000/uploads/${user.avatar}` : undefined} // ✅ Показываем аватар, если есть
+              sx={{ width: 80, height: 80, mr: 2 }}
+            >
+              {!user.avatar && `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`} {/* ✅ Только если аватар не установлен */}
             </Avatar>
             <div>
               <Typography variant="h5" component="h1">
